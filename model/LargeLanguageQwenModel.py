@@ -3,15 +3,19 @@ from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain_core.prompts import ChatPromptTemplate
 
+from model.UserModel import UserModel
+
 '''
 这个类用来自定义大语言模型
     这个类只能使用千问模型
 '''
 default_prompt_template = [
     ("system", "你是一个专业情感树洞, 会给聊天的人带来独一无二的情感价值, 你的性格是:{character_personality},"
-     " 你的名字是:{agent_name}, 我的名字是:{user_name}"),
+               " 你的名字是:{agent_name}, 我的名字是:{user_name}"),
     ("human", "我和你说的话:{user_input}, 回答的风格:{output_style}"),
 ]
+
+memory_id_title = 'memory_id'
 
 
 class PromptTemplateConfig(object):
@@ -86,3 +90,10 @@ class LargeLanguageModel(object):
             config
         )
         return response["messages"][-1].content
+
+
+def invokeByUser(user: UserModel, message):
+    llm = LargeLanguageModel(user.user_model_name, user.user_api_key, user.user_prompt_template,
+                             memory_id_title + user.user_id)
+    config = PromptTemplateConfig(user.agent_personality, user.agent_name, user.user_name, user.user_output_status)
+    return llm.invoke(message, config)
